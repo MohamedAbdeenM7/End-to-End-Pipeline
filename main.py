@@ -3,6 +3,7 @@ from data_cleaner import DataCleaner
 from data_overview import DataOverview
 from data_loader import DataLoader
 import pandas as pd
+from clean_forbike import dash_ready_data
 
 def display_menu(title, options):
     """Helper function to display menus"""
@@ -31,12 +32,13 @@ def main():
             '2': 'Data Overview & Analysis',
             '3': 'Data Cleaning',
             '4': 'Save Data',
-            '5': 'Exit'
+            '5': 'Final file of data ready to use in dash',
+            '6': 'Exit'
         }
         
         display_menu("MAIN MENU", main_menu)
         
-        choice = input("Select option (1-5): ").strip()
+        choice = input("Select option (1-6): ").strip()
         
         if choice == '1':
             # Load Data
@@ -141,15 +143,20 @@ def main():
                 '1': 'Remove Null Rows',
                 '2': 'Fill Null Values',
                 '3': 'Remove Duplicates',
-                '4': 'Fix Column Types',
-                '5': 'Rename Columns',
-                '6': 'Show Cleaning Report',
-                '7': 'Reset to Original',
-                '8': 'Back to Main Menu'
+                '4': 'Remove Outliers (NEW)',
+                '5': 'Fix Column Types',
+                '6': 'Rename Columns',
+                '7': 'Drop Columns (NEW)',
+                '8': 'Infer Data Types (NEW)',
+                '9': 'Clean Text Columns (NEW)',
+                '10': 'Standardize Column Names (NEW)',
+                '11': 'Show Cleaning Report',
+                '12': 'Reset to Original',
+                '13': 'Back to Main Menu'
             }
             
             display_menu("DATA CLEANING", cleaning_menu)
-            clean_choice = input("Select option (1-8): ").strip()
+            clean_choice = input("Select option (1-13): ").strip()
             
             if clean_choice == '1':
                 columns = input("Enter columns to check (comma-separated, leave empty for all): ").strip()
@@ -159,11 +166,37 @@ def main():
                 print("✅ Null rows removed!")
                 
             elif clean_choice == '2':
+                print("\n📝 Fill Null Values")
+                print("Available methods:")
+                print("  1. Fill with specific value")
+                print("  2. Fill with mean (numeric columns)")
+                print("  3. Fill with median (numeric columns)")
+                print("  4. Fill with mode (most common value)")
+                print("  5. Forward fill")
+                print("  6. Backward fill")
+                
+                method_choice = input("\nSelect method (1-6): ").strip()
                 columns = input("Enter columns to fill (comma-separated, leave empty for all): ").strip()
                 columns = [col.strip() for col in columns.split(',')] if columns else None
-                value = input("Enter value to fill (default: 0): ").strip()
-                value = float(value) if '.' in value else (int(value) if value.isdigit() else 0)
-                current_data = cleaner.fill_nulls(value=value, columns=columns)
+                
+                if method_choice == '1':
+                    value = input("Enter value to fill (default: 0): ").strip()
+                    value = float(value) if '.' in value else (int(value) if value.isdigit() else 0)
+                    current_data = cleaner.fill_nulls(value=value, columns=columns)
+                elif method_choice == '2':
+                    current_data = cleaner.fill_nulls(method='mean', columns=columns)
+                elif method_choice == '3':
+                    current_data = cleaner.fill_nulls(method='median', columns=columns)
+                elif method_choice == '4':
+                    current_data = cleaner.fill_nulls(method='mode', columns=columns)
+                elif method_choice == '5':
+                    current_data = cleaner.fill_nulls(method='forward', columns=columns)
+                elif method_choice == '6':
+                    current_data = cleaner.fill_nulls(method='backward', columns=columns)
+                else:
+                    print("Invalid method choice!")
+                    continue
+                
                 overview.set_data(current_data)
                 print("✅ Null values filled!")
                 
@@ -173,6 +206,31 @@ def main():
                 print("✅ Duplicates removed!")
                 
             elif clean_choice == '4':
+                print("\n🔍 Remove Outliers")
+                print("Available methods:")
+                print("  1. IQR (Interquartile Range) - default threshold: 1.5")
+                print("  2. Z-score - default threshold: 3")
+                
+                method_choice = input("\nSelect method (1-2): ").strip()
+                columns = input("Enter numeric columns to check (comma-separated, leave empty for all numeric): ").strip()
+                columns = [col.strip() for col in columns.split(',')] if columns else None
+                
+                if method_choice == '1':
+                    threshold = input("Enter IQR threshold (default: 1.5): ").strip()
+                    threshold = float(threshold) if threshold else 1.5
+                    current_data = cleaner.remove_outliers(columns=columns, method='iqr', threshold=threshold)
+                elif method_choice == '2':
+                    threshold = input("Enter Z-score threshold (default: 3): ").strip()
+                    threshold = float(threshold) if threshold else 3
+                    current_data = cleaner.remove_outliers(columns=columns, method='zscore', threshold=threshold)
+                else:
+                    print("Invalid method choice!")
+                    continue
+                
+                overview.set_data(current_data)
+                print("✅ Outliers removed!")
+                
+            elif clean_choice == '5':
                 print("\nCurrent columns and types:")
                 for col in current_data.columns:
                     print(f"  {col}: {current_data[col].dtype}")
@@ -194,7 +252,7 @@ def main():
                 else:
                     print("No mappings provided.")
                     
-            elif clean_choice == '5':
+            elif clean_choice == '6':
                 print("\nCurrent columns:")
                 for col in current_data.columns:
                     print(f"  {col}")
@@ -216,16 +274,82 @@ def main():
                 else:
                     print("No renamings provided.")
                     
-            elif clean_choice == '6':
+            elif clean_choice == '7':
+                print("\n🗑️ Drop Columns")
+                print("Current columns:")
+                for col in current_data.columns:
+                    print(f"  {col}")
+                
+                columns = input("\nEnter columns to drop (comma-separated): ").strip()
+                if columns:
+                    columns_list = [col.strip() for col in columns.split(',')]
+                    current_data = cleaner.drop_columns(columns_list)
+                    overview.set_data(current_data)
+                    print("✅ Columns dropped!")
+                else:
+                    print("No columns specified.")
+                    
+            elif clean_choice == '8':
+                print("\n🔄 Infer Data Types")
+                print("Automatically detecting and converting data types...")
+                current_data = cleaner.infer_dtypes()
+                overview.set_data(current_data)
+                print("✅ Data types inferred!")
+                print("\nNew column types:")
+                for col in current_data.columns:
+                    print(f"  {col}: {current_data[col].dtype}")
+                    
+            elif clean_choice == '9':
+                print("\n🧹 Clean Text Columns")
+                print("Current text columns:")
+                text_cols = current_data.select_dtypes(include=['object']).columns.tolist()
+                for col in text_cols:
+                    print(f"  {col}")
+                
+                columns = input("\nEnter columns to clean (comma-separated, leave empty for all text columns): ").strip()
+                columns = [col.strip() for col in columns.split(',')] if columns else None
+                
+                lowercase = input("Convert to lowercase? (y/n, default: y): ").strip().lower() != 'n'
+                remove_special = input("Remove special characters? (y/n, default: y): ").strip().lower() != 'n'
+                
+                current_data = cleaner.clean_text_columns(columns=columns, lowercase=lowercase, remove_special=remove_special)
+                overview.set_data(current_data)
+                print("✅ Text columns cleaned!")
+                    
+            elif clean_choice == '10':
+                print("\n📝 Standardize Column Names")
+                print("Current columns:")
+                for col in current_data.columns:
+                    print(f"  {col}")
+                
+                confirm = input("\nStandardize all column names? (y/n): ").strip().lower()
+                if confirm == 'y':
+                    current_data = cleaner.standardize_column_names()
+                    overview.set_data(current_data)
+                    print("✅ Column names standardized!")
+                    print("\nNew column names:")
+                    for col in current_data.columns:
+                        print(f"  {col}")
+                else:
+                    print("Operation cancelled.")
+                    
+            elif clean_choice == '11':
                 report = cleaner.get_cleaning_report()
                 if report:
                     print("\n📋 Cleaning Report:")
-                    for key, value in report.items():
-                        print(f"  {key}: {value}")
+                    print(f"  Original shape: {report['original_shape']}")
+                    print(f"  Current shape: {report['current_shape']}")
+                    print(f"  Rows removed: {report['rows_removed']}")
+                    print(f"  Columns removed: {report['cols_removed']}")
+                    
+                    if 'cleaning_history' in report and report['cleaning_history']:
+                        print("\n  Cleaning History:")
+                        for entry in report['cleaning_history']:
+                            print(f"    • {entry}")
                 else:
                     print("No cleaning report available.")
                     
-            elif clean_choice == '7':
+            elif clean_choice == '12':
                 if cleaner.original_shape:
                     cleaner = DataCleaner(pd.read_csv(loader.file_path) if loader.file_path else None)
                     current_data = cleaner.data
@@ -234,7 +358,7 @@ def main():
                 else:
                     print("No original data available.")
                     
-            elif clean_choice == '8':
+            elif clean_choice == '13':
                 continue
         
         elif choice == '4':
@@ -268,11 +392,15 @@ def main():
                 continue
         
         elif choice == '5':
+            dash_ready_data()
+            break
+        elif choice == '6':
             print("\n👋 Goodbye!")
             break
+
         
         else:
-            print("\n❌ Invalid choice! Please select 1-5.")
+            print("\n❌ Invalid choice! Please select 1-6.")
 
 if __name__ == "__main__":
     main()
