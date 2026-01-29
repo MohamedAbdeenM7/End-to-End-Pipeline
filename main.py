@@ -152,7 +152,8 @@ def main():
                 '10': 'Standardize Column Names (NEW)',
                 '11': 'Show Cleaning Report',
                 '12': 'Reset to Original',
-                '13': 'Back to Main Menu'
+                '13':'Prepare Data for Dash ',
+                '14': 'Back to Main Menu'
             }
             
             display_menu("DATA CLEANING", cleaning_menu)
@@ -357,8 +358,12 @@ def main():
                     print("✅ Data reset to original!")
                 else:
                     print("No original data available.")
-                    
+
             elif clean_choice == '13':
+                cleaner = DataCleaner(data= None)
+                cleaner.dash_ready_data()
+
+            elif clean_choice == '14':
                 continue
         
         elif choice == '4':
