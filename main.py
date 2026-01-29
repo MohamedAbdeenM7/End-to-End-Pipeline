@@ -2,6 +2,7 @@
 from data_cleaner import DataCleaner
 from data_overview import DataOverview
 from data_loader import DataLoader
+from visualization import Visualizer
 import pandas as pd
 
 def display_menu(title, options):
@@ -31,12 +32,13 @@ def main():
             '2': 'Data Overview & Analysis',
             '3': 'Data Cleaning',
             '4': 'Save Data',
-            '5': 'Exit'
+            '5': 'Visualization' ,
+            '6': 'Exit'
         }
         
         display_menu("MAIN MENU", main_menu)
         
-        choice = input("Select option (1-5): ").strip()
+        choice = input("Select option (1-6): ").strip()
         
         if choice == '1':
             # Load Data
@@ -267,12 +269,108 @@ def main():
             elif save_choice == '3':
                 continue
         
-        elif choice == '5':
-            print("\n👋 Goodbye!")
-            break
-        
-        else:
-            print("\n❌ Invalid choice! Please select 1-5.")
+        elif choice == '5' :
+            # Save Data
+            if current_data is None:
+                print("\nNo data to save! Please load data first.")
+                continue
+            
+            vis = Visualizer(current_data)
+            
+            while True: 
+                visualization_menu = {
+                    '1': 'Bar Plot' ,
+                    '2': 'Histogram',
+                    '3': 'Box plot' ,
+                    '4': 'Pie ploe' ,
+                    '5': 'Heatmap'  ,
+                    '6': 'Scatter plot' ,
+                    '7': 'Back to Main Menu'
+                }
+
+                display_menu("DATA Visualization", visualization_menu)
+                
+                visualization_choice = input("Select option (1-7): ").strip()
+
+                if visualization_choice == '7':
+                    break
+
+                print("\nAvailable columns:")
+                for i, col in enumerate(current_data.columns):
+                    print(f"{i + 1}. {col}")
+
+                # -------- BAR PLOT --------
+                if visualization_choice == '1':
+                    print("\n📊 Bar plot: best for categorical columns (counts).")
+
+                    col_input = input("Select column number: ").strip()
+                    if not col_input.isdigit():
+                        print("❌ Invalid input.")
+                        continue
+
+                    chosen_col = current_data.columns[int(col_input) - 1]
+                    vis.bar_plot(chosen_col)
+
+                # -------- HISTOGRAM --------
+                elif visualization_choice == '2':
+                    print("\n📈 Histogram: best for numeric column distributions.")
+
+                    col_input = input("Select column number: ").strip()
+                    if not col_input.isdigit():
+                        print("❌ Invalid input.")
+                        continue
+
+                    chosen_col = current_data.columns[int(col_input) - 1]
+                    vis.hist_plot(chosen_col)
+
+                # -------- BOX PLOT --------
+                elif visualization_choice == '3':
+                    print("\n📦 Box plot: best for detecting outliers in numeric columns.")
+
+                    col_input = input("Select column number: ").strip()
+                    if not col_input.isdigit():
+                        print("❌ Invalid input.")
+                        continue
+
+                    chosen_col = current_data.columns[int(col_input) - 1]
+                    vis.box_plot(chosen_col)
+
+                # -------- PIE PLOT --------
+                elif visualization_choice == '4':
+                    print("\n🥧 Pie plot: best for showing proportions of categories.")
+
+                    col_input = input("Select column number: ").strip()
+                    if not col_input.isdigit():
+                        print("❌ Invalid input.")
+                        continue
+
+                    chosen_col = current_data.columns[int(col_input) - 1]
+                    vis.pie_plot(chosen_col)
+
+                # -------- HEATMAP --------
+                elif visualization_choice == '5':
+                    print("\n🔥 Heatmap: shows correlation between numeric columns.")
+
+                    vis.heatmap_plot()
+
+                # -------- SCATTER PLOT --------
+                elif visualization_choice == '6':
+                    print("\n🔵 Scatter plot: shows relationship between two numeric columns.")
+
+                    col1 = input("Select FIRST column number: ").strip()
+                    col2 = input("Select SECOND column number: ").strip()
+
+                    if not col1.isdigit() or not col2.isdigit():
+                        print("❌ Invalid input.")
+                        continue
+
+                    col1 = current_data.columns[int(col1) - 1]
+                    col2 = current_data.columns[int(col2) - 1]
+
+                    vis.scatter_plot(col1, col2)
+
+                else:
+                    print("❌ Invalid choice!")
 
 if __name__ == "__main__":
     main()
