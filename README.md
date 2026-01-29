@@ -16,3 +16,5 @@
 - [ ] Thursday Meeting
 - [ ] Discussion About our Future → Destinies
 - [ ] Final Revision
+- [ ] Final Revision AGAIN
+- [ ] Final Revision AGAIN AGAIN
