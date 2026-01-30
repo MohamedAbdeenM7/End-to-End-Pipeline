@@ -360,7 +360,7 @@ def main():
                     print("No original data available.")
 
             elif clean_choice == '13':
-                cleaner = DataCleaner(data= None)
+                cleaner = DataCleaner(data = None)
                 cleaner.dash_ready_data()
 
             elif clean_choice == '14':

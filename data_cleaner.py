@@ -263,10 +263,10 @@ class DataCleaner:
         else:
             raise ValueError("action must be 'remove', 'replace', or 'cap'")
         return self.data
-
-    def dash_ready_data(self):
+    @staticmethod
+    def dash_ready_data():
         # 1️⃣ Load raw data
-        df = pd.read_csv("fordgobike-tripdataFor201902.csv")
+        df = pd.read_csv("data/raw/ford_go_bike.csv")
 
         # 2️⃣ Rename columns (standardize)
         df = df.rename(columns={
